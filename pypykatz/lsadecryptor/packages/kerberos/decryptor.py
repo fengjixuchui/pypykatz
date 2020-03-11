@@ -5,11 +5,13 @@
 #
 import io
 
-from pypykatz.commons.common import *
-from pypykatz.commons.filetime import *
-from pypykatz.commons.kerberosticket import *
-from .templates import *
-from pypykatz.lsadecryptor.package_commons import *
+#from pypykatz.commons.common import *
+#from pypykatz.commons.filetime import *
+#from .templates import *
+from pypykatz.commons.kerberosticket import KerberosTicket, KerberosTicketType
+from pypykatz.lsadecryptor.package_commons import PackageDecryptor
+from pypykatz.commons.win_datatypes import PLIST_ENTRY, PRTL_AVL_TABLE
+from pypykatz.commons.common import WindowsMinBuild
 
 class KerberosCredential:
 	def __init__(self):
@@ -25,8 +27,12 @@ class KerberosCredential:
 		t += '\t\tUsername: %s\n' % self.username
 		t += '\t\tDomain: %s\n' % self.domainname
 		t += '\t\tPassword: %s\n' % self.password
-		for ticket in self.tickets:
-			t += '\t\t%s' % str(ticket).replace('\n','\n\t\t\t')[:-3]
+
+		# TODO: check if users actually need this.
+		# I think it's not useful to print out the kerberos ticket data as string, as noone uses it directly.
+		# It is better to use the -k flag an export the tickets
+		#for ticket in self.tickets:
+		#	t += '\t\t%s' % str(ticket).replace('\n','\n\t\t\t')[:-3]
 		
 		return t
 		

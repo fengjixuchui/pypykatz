@@ -5,12 +5,12 @@
 #
 import io
 import json
-from pypykatz.commons.common import *
-from pypykatz.commons.filetime import *
-from pypykatz.commons.win_datatypes import *
-from pypykatz.lsadecryptor.packages.msv.templates import *
-from pypykatz.lsadecryptor.packages.credman.templates import *
-from pypykatz.lsadecryptor.package_commons import *
+from pypykatz.commons.common import WindowsMinBuild, KatzSystemArchitecture, GenericReader, UniversalEncoder, hexdump
+from pypykatz.commons.filetime import filetime_to_dt
+#from pypykatz.commons.win_datatypes import *
+from pypykatz.lsadecryptor.packages.msv.templates import MSV1_0_PRIMARY_CREDENTIAL_STRANGE_DEC
+from pypykatz.lsadecryptor.packages.credman.templates import KIWI_CREDMAN_LIST_STARTER, KIWI_CREDMAN_SET_LIST_ENTRY
+from pypykatz.lsadecryptor.package_commons import PackageDecryptor
 
 class MsvCredential:
 	def __init__(self):
@@ -362,7 +362,14 @@ class MsvDecryptor(PackageDecryptor):
 			self.reader.move(entry_ptr_loc)
 			for x in range(i*2): #skipping offset in an architecture-agnostic way
 				self.reader.read_int() #does nothing just moves the position
-				self.log('moving to other logon session')
-			entry_ptr = self.decryptor_template.list_entry(self.reader)
-			self.walk_list(entry_ptr, self.add_entry)
+				#self.log('moving to other logon session')
 
+			entry_ptr = self.decryptor_template.list_entry(self.reader)
+			
+			if entry_ptr.location == entry_ptr.value:
+				# when there are multiple logon sessions (modern windows) there are cases when the
+				# logon session list doesnt exist anymore. worry not, there are multiple of them, 
+				# but we need to skip the ones that are empty (eg. pointer points to itself)
+				continue
+			
+			self.walk_list(entry_ptr, self.add_entry)
